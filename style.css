@@ -1,71 +1,67 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f0f4f8;
+  background: #f4f7fa;
+  margin: 0;
+  padding: 0;
   color: #333;
-  text-align: center;
-  padding: 20px;
 }
 
 .container {
   max-width: 600px;
-  margin: auto;
-}
-
-.logo {
-  width: 120px;
-  display: block;
-  margin: 0 auto 20px auto;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 h1 {
+  text-align: center;
   color: #007acc;
-  margin-bottom: 20px;
 }
 
-.resumo {
-  background: #e0f0ff;
-  border: 1px solid #007acc;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 20px;
-  text-align: left;
+h2 {
+  margin-top: 20px;
+  color: #444;
 }
 
-.resumo h2 {
-  color: #007acc;
-  margin-bottom: 10px;
-}
-
-#resetButton {
-  background: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
-
-#resetButton:hover {
-  background: #cc0000;
-}
-
-.form {
+.formulario {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-input, select, button {
+.formulario input, .formulario select {
+  flex: 1;
   padding: 8px;
-  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-button {
+.formulario button {
   background: #007acc;
   color: white;
   border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.formulario button:hover {
+  background: #005f99;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+button {
+  margin-top: 10px;
+  background: #007acc;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -73,60 +69,82 @@ button:hover {
   background: #005f99;
 }
 
-ul {
-  text-align: left;
-  margin-bottom: 20px;
-  padding-left: 20px;
-}
-
-.icone-veiculo {
-  width: 24px;
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-/* Painel do dono moderno */
-#painelDono {
-  background: #f8f9fa;
+/* Painel do dono fixo */
+.admin-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fff;
   border: 2px solid #007acc;
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 15px;
+  width: 280px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  text-align: center;
+  z-index: 999;
 }
 
-#painelDono h2 {
+.admin-box h3 {
+  margin-bottom: 10px;
   color: #007acc;
-  margin-bottom: 15px;
 }
 
-#registrosDono li {
-  background: #ffffff;
+/* Login */
+.login-form input {
+  width: 100%;
+  padding: 8px;
   margin-bottom: 8px;
-  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Abas */
+.abas {
+  margin: 10px 0;
+}
+
+.abas button {
+  margin-right: 5px;
+  padding: 6px 12px;
+  border: none;
+  background: #007acc;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.abas button:hover {
+  background: #005fa3;
+}
+
+.aba-conteudo {
+  margin-top: 10px;
+}
+
+/* Registros no painel */
+#registrosDono li {
+  margin-bottom: 6px;
+  padding: 8px;
   border-radius: 6px;
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  gap: 8px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
-#registrosDono li img {
-  width: 24px;
-  height: 24px;
+#registrosDono li.carro { background: #e0f7fa; color: #00796b; }
+#registrosDono li.moto { background: #fff3e0; color: #e65100; }
+#registrosDono li.caminhao { background: #fce4ec; color: #880e4f; }
+
+#registrosDono img {
+  width: 20px;
+  height: 20px;
 }
 
-#painelDono button {
-  background: #007acc;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-#painelDono button:hover {
-  background: #005f99;
+/* Gráficos */
+canvas {
+  margin-top: 15px;
+  max-width: 100%;
 }
