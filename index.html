@@ -13,11 +13,13 @@
 
     <h1>Lava Jato do Di 🚗🧼</h1>
 
-    <!-- Resumo do dia -->
+    <!-- Data do dia -->
     <div class="resumo">
       <h2>Resumo do dia</h2>
+      <p id="dataDia"></p>
       <p>Carros lavados: <span id="totalCarros">0</span></p>
       <p>Motos lavadas: <span id="totalMotos">0</span></p>
+      <p>Caminhões lavados: <span id="totalCaminhoes">0</span></p>
       <p>Total arrecadado: R$ <span id="totalGeral">0</span></p>
     </div>
 
@@ -42,13 +44,34 @@
     <!-- Lista de ganhos -->
     <h2>Ganhos por funcionário</h2>
     <ul id="ganhosList"></ul>
+
+    <!-- Login do dono -->
+    <div class="admin-login">
+      <input type="password" id="senhaAdmin" placeholder="Senha do dono">
+      <button onclick="entrarAdmin()">Entrar como dono</button>
+    </div>
+
+    <!-- Painel do dono -->
+    <div id="painelDono" style="display:none;">
+      <h2>Painel do dono</h2>
+      <ul id="registrosDono"></ul>
+      <button onclick="sairAdmin()">Sair do painel</button>
+    </div>
   </div>
 
   <script>
-    // Inicialização
     const registros = JSON.parse(localStorage.getItem("registros")) || [];
     const valores = { carro: 20, moto: 10, caminhao: 50 };
     const icones = { carro: "carro.png", moto: "moto.png", caminhao: "caminhao.png" };
+    const senhaCorreta = "1234"; // Substitua pela sua senha
+
+    function atualizarData() {
+      const hoje = new Date();
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const ano = hoje.getFullYear();
+      document.getElementById("dataDia").textContent = `Dia: ${dia}/${mes}/${ano}`;
+    }
 
     function adicionarRegistro() {
       const funcionario = document.getElementById("funcionario").value.trim();
@@ -60,6 +83,7 @@
 
       salvarRegistros();
       atualizarListas();
+      atualizarPainelDono();
     }
 
     function atualizarListas() {
@@ -70,11 +94,13 @@
       const ganhos = {};
       let totalCarros = 0;
       let totalMotos = 0;
+      let totalCaminhoes = 0;
       let totalGeral = 0;
 
       registros.forEach(r => {
         if (r.veiculo === "carro") totalCarros++;
         if (r.veiculo === "moto") totalMotos++;
+        if (r.veiculo === "caminhao") totalCaminhoes++;
         totalGeral += valores[r.veiculo];
 
         const li = document.createElement("li");
@@ -92,6 +118,7 @@
 
       document.getElementById("totalCarros").textContent = totalCarros;
       document.getElementById("totalMotos").textContent = totalMotos;
+      document.getElementById("totalCaminhoes").textContent = totalCaminhoes;
       document.getElementById("totalGeral").textContent = totalGeral;
 
       ganhosList.innerHTML = "";
@@ -107,13 +134,44 @@
       registros.length = 0;
       salvarRegistros();
       atualizarListas();
+      atualizarPainelDono();
     }
 
     function salvarRegistros() {
       localStorage.setItem("registros", JSON.stringify(registros));
     }
 
-    window.onload = atualizarListas;
+    // Painel do dono
+    function entrarAdmin() {
+      const senha = document.getElementById("senhaAdmin").value;
+      if (senha === senhaCorreta) {
+        document.getElementById("painelDono").style.display = "block";
+        document.querySelector(".admin-login").style.display = "none";
+        atualizarPainelDono();
+      } else {
+        alert("Senha incorreta!");
+      }
+    }
+
+    function sairAdmin() {
+      document.getElementById("painelDono").style.display = "none";
+      document.querySelector(".admin-login").style.display = "block";
+    }
+
+    function atualizarPainelDono() {
+      const painel = document.getElementById("registrosDono");
+      painel.innerHTML = "";
+      registros.forEach((r, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
+        painel.appendChild(li);
+      });
+    }
+
+    window.onload = function() {
+      atualizarData();
+      atualizarListas();
+    };
   </script>
 </body>
 </html>
