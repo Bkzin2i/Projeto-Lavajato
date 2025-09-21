@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lava Jato do Di</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Cabeçalho -->
   <header>
     <img src="logo.png" alt="Logo Lava Jato" class="logo">
     <h1>Lava Jato do Di 🚗🧼</h1>
+    <button id="toggleTema" class="tema-btn">🌙</button>
   </header>
 
+  <!-- Conteúdo principal -->
   <main>
+    <!-- Formulário -->
     <div class="formulario">
-      <input type="text" id="funcionario" placeholder="Nome do funcionário">
+      <input id="funcionario" placeholder="Nome do funcionário">
       <select id="veiculo">
         <option value="carro">Carro</option>
         <option value="moto">Moto</option>
@@ -24,218 +27,183 @@
       <button onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
+    <!-- Registros -->
     <section>
-      <h2>Registros de hoje</h2>
+      <h2>Registros</h2>
       <ul id="listaRegistros"></ul>
     </section>
 
+    <!-- Ganhos -->
     <section>
-      <h2>Ganhos por funcionário</h2>
+      <h2>Ganhos por Funcionário</h2>
       <ul id="listaGanhos"></ul>
     </section>
 
+    <!-- Resumo -->
     <section>
-      <h2>Resumo do dia</h2>
-      <p id="resumo"></p>
-      <button onclick="finalizarDia()">✅ Finalizar dia</button>
+      <h2>Resumo do Dia</h2>
+      <ul id="resumoDia"></ul>
     </section>
   </main>
 
+  <!-- Login do dono -->
+  <div class="login-dono" id="loginDono">
+    <input type="password" id="senhaDono" placeholder="Senha do dono">
+    <button onclick="loginDono()">Entrar</button>
+  </div>
+
   <!-- Painel do dono -->
-  <div id="painelDono" class="painel">
+  <div class="painel" id="painelDono">
     <div class="painel-header">
-      <span>👑 Painel do Dono</span>
-      <button onclick="sairPainel()">Sair</button>
+      <span>Painel do Dono</span>
+      <button onclick="logoutDono()">❌</button>
     </div>
 
     <div class="abas">
-      <button onclick="abrirAba('registros')">📋 Registros</button>
-      <button onclick="abrirAba('ganhos')">💰 Ganhos</button>
-      <button onclick="abrirAba('historico')">📅 Histórico</button>
+      <button onclick="mostrarAba('historico')">Histórico</button>
+      <button onclick="mostrarAba('grafico')">Gráfico</button>
     </div>
 
-    <div id="aba-registros" class="aba-conteudo">
-      <ul id="registrosDono"></ul>
+    <div class="aba-conteudo" id="aba-historico">
+      <ul id="historicoRegistros"></ul>
     </div>
 
-    <div id="aba-ganhos" class="aba-conteudo" style="display:none;">
-      <ul id="ganhosDono"></ul>
-    </div>
-
-    <div id="aba-historico" class="aba-conteudo" style="display:none;">
-      <ul id="listaHistorico"></ul>
+    <div class="aba-conteudo" id="aba-grafico" style="display:none;">
       <canvas id="graficoHistorico"></canvas>
     </div>
   </div>
 
-  <!-- Login do dono -->
-  <div id="loginDono" class="login-dono">
-    <input type="password" id="senhaDono" placeholder="Senha do dono">
-    <button onclick="entrarPainel()">Entrar</button>
-  </div>
-
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const valores = { carro: 20, moto: 10, caminhao: 50 };
-    const icones = {
-      carro: "🚗",
-      moto: "🏍️",
-      caminhao: "🚚"
-    };
-    const senhaCorreta = "1234";
-
     let registros = [];
     let historico = [];
-    let chartHistorico = null;
+    let donoLogado = false;
+    const senhaCorreta = "1234";
+
+    // Chart.js
+    const ctx = document.getElementById("graficoHistorico").getContext("2d");
+    const grafico = new Chart(ctx, {
+      type: "bar",
+      data: { labels: [], datasets: [{ label: "Lavagens por dia", data: [], backgroundColor: "#00bfff" }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
 
     function adicionarRegistro() {
       const funcionario = document.getElementById("funcionario").value.trim();
       const veiculo = document.getElementById("veiculo").value;
-
       if (!funcionario) return;
 
       registros.push({ funcionario, veiculo });
+      historico.push({ funcionario, veiculo, data: new Date().toLocaleString() });
+
       document.getElementById("funcionario").value = "";
       atualizarTela();
     }
 
     function atualizarTela() {
-      const listaRegistros = document.getElementById("listaRegistros");
-      listaRegistros.innerHTML = "";
+      // Lista registros
+      const lista = document.getElementById("listaRegistros");
+      lista.innerHTML = "";
       registros.forEach(r => {
         const li = document.createElement("li");
-        li.textContent = `${r.funcionario} lavou ${r.veiculo} ${icones[r.veiculo]} (+R$ ${valores[r.veiculo]})`;
-        listaRegistros.appendChild(li);
+        li.textContent = `${r.funcionario} lavou um ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
+        lista.appendChild(li);
       });
 
+      // Ganhos
       const ganhos = registros.reduce((acc, r) => {
         acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
         return acc;
       }, {});
-
       const listaGanhos = document.getElementById("listaGanhos");
       listaGanhos.innerHTML = "";
-      Object.entries(ganhos).forEach(([nome, total]) => {
+      for (const [nome, total] of Object.entries(ganhos)) {
         const li = document.createElement("li");
         li.textContent = `${nome}: R$ ${total}`;
         listaGanhos.appendChild(li);
+      }
+
+      // Resumo
+      const resumo = { carro: 0, moto: 0, caminhao: 0 };
+      registros.forEach(r => resumo[r.veiculo]++);
+      const resumoDia = document.getElementById("resumoDia");
+      resumoDia.innerHTML = `
+        <li>Carros: ${resumo.carro}</li>
+        <li>Motos: ${resumo.moto}</li>
+        <li>Caminhões: ${resumo.caminhao}</li>
+      `;
+
+      // Histórico (painel dono)
+      const historicoUl = document.getElementById("historicoRegistros");
+      historicoUl.innerHTML = "";
+      historico.forEach(h => {
+        const li = document.createElement("li");
+        li.textContent = `${h.data} - ${h.funcionario} lavou ${h.veiculo}`;
+        historicoUl.appendChild(li);
       });
 
-      const totalCarros = registros.filter(r => r.veiculo === "carro").length;
-      const totalMotos = registros.filter(r => r.veiculo === "moto").length;
-      const totalCaminhoes = registros.filter(r => r.veiculo === "caminhao").length;
-      const totalGeral = registros.reduce((sum, r) => sum + valores[r.veiculo], 0);
-
-      document.getElementById("resumo").textContent =
-        `Carros: ${totalCarros}, Motos: ${totalMotos}, Caminhões: ${totalCaminhoes}, Total do dia: R$ ${totalGeral}`;
-
-      atualizarPainelDono();
+      // Gráfico
+      const dataHoje = new Date().toLocaleDateString();
+      const countHoje = registros.length;
+      const idx = grafico.data.labels.indexOf(dataHoje);
+      if (idx === -1) {
+        grafico.data.labels.push(dataHoje);
+        grafico.data.datasets[0].data.push(countHoje);
+      } else {
+        grafico.data.datasets[0].data[idx] = countHoje;
+      }
+      grafico.update();
     }
 
-    function finalizarDia() {
-      if (registros.length === 0) return;
-      const totalCarros = registros.filter(r => r.veiculo === "carro").length;
-      const totalMotos = registros.filter(r => r.veiculo === "moto").length;
-      const totalCaminhoes = registros.filter(r => r.veiculo === "caminhao").length;
-      const totalGeral = registros.reduce((sum, r) => sum + valores[r.veiculo], 0);
-
-      historico.push({
-        data: new Date().toLocaleDateString("pt-BR"),
-        totalCarros,
-        totalMotos,
-        totalCaminhoes,
-        totalGeral
-      });
-
-      registros = [];
-      atualizarTela();
-    }
-
-    function entrarPainel() {
+    function loginDono() {
       const senha = document.getElementById("senhaDono").value;
       if (senha === senhaCorreta) {
+        donoLogado = true;
         document.getElementById("painelDono").style.display = "block";
         document.getElementById("loginDono").style.display = "none";
-        atualizarPainelDono();
       } else {
         alert("Senha incorreta!");
       }
     }
 
-    function sairPainel() {
+    function logoutDono() {
+      donoLogado = false;
       document.getElementById("painelDono").style.display = "none";
       document.getElementById("loginDono").style.display = "block";
     }
 
-    function abrirAba(aba) {
-      document.querySelectorAll(".aba-conteudo").forEach(div => div.style.display = "none");
-      document.getElementById("aba-" + aba).style.display = "block";
-      if (aba === "historico") atualizarHistorico();
+    function mostrarAba(aba) {
+      document.getElementById("aba-historico").style.display = aba === "historico" ? "block" : "none";
+      document.getElementById("aba-grafico").style.display = aba === "grafico" ? "block" : "none";
     }
 
-    function atualizarPainelDono() {
-      const lista = document.getElementById("registrosDono");
-      lista.innerHTML = "";
-      registros.forEach(r => {
-        const li = document.createElement("li");
-        li.textContent = `${r.funcionario} lavou ${r.veiculo} ${icones[r.veiculo]} (+R$ ${valores[r.veiculo]})`;
-        lista.appendChild(li);
-      });
+    // === Alternância de tema com localStorage ===
+    const body = document.body;
+    const toggleBtn = document.getElementById("toggleTema");
 
-      const ganhos = registros.reduce((acc, r) => {
-        acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
-        return acc;
-      }, {});
-
-      const listaGanhos = document.getElementById("ganhosDono");
-      listaGanhos.innerHTML = "";
-      Object.entries(ganhos).forEach(([nome, total]) => {
-        const li = document.createElement("li");
-        li.textContent = `${nome}: R$ ${total}`;
-        listaGanhos.appendChild(li);
-      });
+    // Verifica tema salvo
+    const temaSalvo = localStorage.getItem("tema");
+    if (temaSalvo === "dark") {
+      body.classList.add("dark");
+      toggleBtn.textContent = "🌙";
+    } else {
+      body.classList.remove("dark");
+      toggleBtn.textContent = "☀️";
     }
 
-    function atualizarHistorico() {
-      const lista = document.getElementById("listaHistorico");
-      lista.innerHTML = "";
-
-      if (historico.length === 0) {
-        lista.innerHTML = "<li>Nenhum dia registrado ainda.</li>";
-        return;
+    // Alterna e salva
+    toggleBtn.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      if (body.classList.contains("dark")) {
+        toggleBtn.textContent = "🌙";
+        localStorage.setItem("tema", "dark");
+      } else {
+        toggleBtn.textContent = "☀️";
+        localStorage.setItem("tema", "light");
       }
-
-      historico.forEach(dia => {
-        const li = document.createElement("li");
-        li.textContent =
-          `${dia.data} → Carros: ${dia.totalCarros}, Motos: ${dia.totalMotos}, Caminhões: ${dia.totalCaminhoes}, Total: R$ ${dia.totalGeral}`;
-        lista.appendChild(li);
-      });
-
-      const ctx = document.getElementById("graficoHistorico").getContext("2d");
-      if (chartHistorico) chartHistorico.destroy();
-
-      chartHistorico = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: historico.map(d => d.data),
-          datasets: [{
-            label: "Arrecadação por dia (R$)",
-            data: historico.map(d => d.totalGeral),
-            backgroundColor: "rgba(0,123,255,0.7)",
-            borderColor: "rgba(0,123,255,1)",
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: "Histórico de arrecadação" }
-          },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
+    });
   </script>
 </body>
 </html>
