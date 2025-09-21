@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lava Jato do Di</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <img src="logo.png" alt="Lava Jato do Di" class="logo">
+
+    <h1>Lava Jato do Di 🚗🧼</h1>
+
+    <!-- Resumo do dia -->
+    <div class="resumo">
+      <h2>Resumo do dia</h2>
+      <p>Carros lavados: <span id="totalCarros">0</span></p>
+      <p>Motos lavadas: <span id="totalMotos">0</span></p>
+      <p>Total arrecadado: R$ <span id="totalGeral">0</span></p>
+    </div>
+
+    <!-- Botão Reset do dia -->
+    <button id="resetButton" onclick="resetDia()">Reset do dia</button>
+
+    <!-- Formulário de registro -->
+    <div class="form">
+      <input type="text" id="funcionario" placeholder="Nome do funcionário">
+      <select id="veiculo">
+        <option value="carro">Carro</option>
+        <option value="moto">Moto</option>
+        <option value="caminhao">Caminhão</option>
+      </select>
+      <button onclick="adicionarRegistro()">Adicionar</button>
+    </div>
+
+    <!-- Lista de registros -->
+    <h2>Registros</h2>
+    <ul id="registrosList"></ul>
+
+    <!-- Lista de ganhos -->
+    <h2>Ganhos por funcionário</h2>
+    <ul id="ganhosList"></ul>
+  </div>
+
+  <script>
+    // Inicialização
+    const registros = JSON.parse(localStorage.getItem("registros")) || [];
+    const valores = { carro: 20, moto: 10, caminhao: 50 };
+    const icones = { carro: "carro.png", moto: "moto.png", caminhao: "caminhao.png" };
+
+    function adicionarRegistro() {
+      const funcionario = document.getElementById("funcionario").value.trim();
+      const veiculo = document.getElementById("veiculo").value;
+      if (!funcionario) return alert("Digite o nome do funcionário!");
+      
+      registros.push({ funcionario, veiculo });
+      document.getElementById("funcionario").value = "";
+
+      salvarRegistros();
+      atualizarListas();
+    }
+
+    function atualizarListas() {
+      const registrosList = document.getElementById("registrosList");
+      const ganhosList = document.getElementById("ganhosList");
+      
+      registrosList.innerHTML = "";
+      const ganhos = {};
+      let totalCarros = 0;
+      let totalMotos = 0;
+      let totalGeral = 0;
+
+      registros.forEach(r => {
+        if (r.veiculo === "carro") totalCarros++;
+        if (r.veiculo === "moto") totalMotos++;
+        totalGeral += valores[r.veiculo];
+
+        const li = document.createElement("li");
+        const img = document.createElement("img");
+        img.src = icones[r.veiculo];
+        img.alt = r.veiculo;
+        img.className = "icone-veiculo";
+
+        li.appendChild(img);
+        li.appendChild(document.createTextNode(` ${r.funcionario} lavou um ${r.veiculo} (+R$ ${valores[r.veiculo]})`));
+        registrosList.appendChild(li);
+
+        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
+      });
+
+      document.getElementById("totalCarros").textContent = totalCarros;
+      document.getElementById("totalMotos").textContent = totalMotos;
+      document.getElementById("totalGeral").textContent = totalGeral;
+
+      ganhosList.innerHTML = "";
+      for (const [nome, total] of Object.entries(ganhos)) {
+        const li = document.createElement("li");
+        li.textContent = `${nome}: R$ ${total}`;
+        ganhosList.appendChild(li);
+      }
+    }
+
+    function resetDia() {
+      if (!confirm("Tem certeza que deseja limpar todos os registros do dia?")) return;
+      registros.length = 0;
+      salvarRegistros();
+      atualizarListas();
+    }
+
+    function salvarRegistros() {
+      localStorage.setItem("registros", JSON.stringify(registros));
+    }
+
+    window.onload = atualizarListas;
+  </script>
+</body>
+</html>
