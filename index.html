@@ -8,247 +8,190 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>🚗 Lava Jato do Di 🧼</h1>
+  <header>
+    <img src="logo.png" alt="Logo Lava Jato" class="logo">
+    <h1>Lava Jato do Di 🚗🧼</h1>
+  </header>
 
-    <!-- Formulário de registros -->
+  <main>
     <div class="formulario">
       <input type="text" id="funcionario" placeholder="Nome do funcionário">
       <select id="veiculo">
-        <option value="carro">Carro (R$20)</option>
-        <option value="moto">Moto (R$10)</option>
-        <option value="caminhao">Caminhão (R$50)</option>
+        <option value="carro">Carro</option>
+        <option value="moto">Moto</option>
+        <option value="caminhao">Caminhão</option>
       </select>
       <button onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
-    <!-- Lista -->
-    <h2>📋 Registros de hoje</h2>
-    <ul id="listaRegistros"></ul>
+    <section>
+      <h2>Registros de hoje</h2>
+      <ul id="listaRegistros"></ul>
+    </section>
 
-    <!-- Resumo -->
-    <h2>💰 Resumo</h2>
-    <p>Carros: <span id="qtdCarros">0</span></p>
-    <p>Motos: <span id="qtdMotos">0</span></p>
-    <p>Caminhões: <span id="qtdCaminhoes">0</span></p>
-    <p><strong>Total arrecadado: R$ <span id="total">0</span></strong></p>
+    <section>
+      <h2>Ganhos por funcionário</h2>
+      <ul id="listaGanhos"></ul>
+    </section>
 
-    <!-- Ganhos por funcionário -->
-    <h2>👨‍🔧 Ganhos por funcionário</h2>
-    <ul id="ganhosFuncionarios"></ul>
-
-    <button onclick="resetDia()">Encerrar o dia</button>
-  </div>
+    <section>
+      <h2>Resumo do dia</h2>
+      <p id="resumo"></p>
+      <button onclick="finalizarDia()">✅ Finalizar dia</button>
+    </section>
+  </main>
 
   <!-- Painel do dono -->
-  <div id="adminBox" class="admin-box">
-    <button id="loginBtn" onclick="mostrarLogin()">Entrar 🔑</button>
-
-    <div id="loginForm" class="login-form" style="display:none;">
-      <input type="password" id="senhaAdmin" placeholder="Senha do dono">
-      <button onclick="entrarAdmin()">Acessar</button>
+  <div id="painelDono" class="painel">
+    <div class="painel-header">
+      <span>👑 Painel do Dono</span>
+      <button onclick="sairPainel()">Sair</button>
     </div>
 
-    <div id="painelDono" style="display:none;">
-      <h3>👑 Painel do dono</h3>
-
-      <!-- Abas -->
-      <div class="abas">
-        <button onclick="mostrarAba('registros')">📋 Registros</button>
-        <button onclick="mostrarAba('graficos')">📊 Gráficos</button>
-        <button onclick="mostrarAba('historico')">📅 Histórico</button>
-      </div>
-
-      <!-- Conteúdo das abas -->
-      <div id="aba-registros" class="aba-conteudo">
-        <ul id="registrosDono"></ul>
-      </div>
-
-      <div id="aba-graficos" class="aba-conteudo" style="display:none;">
-        <canvas id="graficoVeiculos"></canvas>
-        <canvas id="graficoFuncionarios"></canvas>
-      </div>
-
-      <div id="aba-historico" class="aba-conteudo" style="display:none;">
-        <ul id="listaHistorico"></ul>
-        <canvas id="graficoHistorico"></canvas>
-      </div>
-
-      <button onclick="sairAdmin()">Sair</button>
+    <div class="abas">
+      <button onclick="abrirAba('registros')">📋 Registros</button>
+      <button onclick="abrirAba('ganhos')">💰 Ganhos</button>
+      <button onclick="abrirAba('historico')">📅 Histórico</button>
     </div>
+
+    <div id="aba-registros" class="aba-conteudo">
+      <ul id="registrosDono"></ul>
+    </div>
+
+    <div id="aba-ganhos" class="aba-conteudo" style="display:none;">
+      <ul id="ganhosDono"></ul>
+    </div>
+
+    <div id="aba-historico" class="aba-conteudo" style="display:none;">
+      <ul id="listaHistorico"></ul>
+      <canvas id="graficoHistorico"></canvas>
+    </div>
+  </div>
+
+  <!-- Login do dono -->
+  <div id="loginDono" class="login-dono">
+    <input type="password" id="senhaDono" placeholder="Senha do dono">
+    <button onclick="entrarPainel()">Entrar</button>
   </div>
 
   <script>
-    const senhaCorreta = "1234"; // senha do dono
     const valores = { carro: 20, moto: 10, caminhao: 50 };
     const icones = {
-      carro: "https://cdn-icons-png.flaticon.com/512/743/743922.png",
-      moto: "https://cdn-icons-png.flaticon.com/512/743/743928.png",
-      caminhao: "https://cdn-icons-png.flaticon.com/512/743/743914.png"
+      carro: "🚗",
+      moto: "🏍️",
+      caminhao: "🚚"
     };
+    const senhaCorreta = "1234";
 
-    let registros = JSON.parse(localStorage.getItem("registros")) || [];
-    let historico = JSON.parse(localStorage.getItem("historico")) || [];
-
-    function salvarRegistros() {
-      localStorage.setItem("registros", JSON.stringify(registros));
-    }
+    let registros = [];
+    let historico = [];
+    let chartHistorico = null;
 
     function adicionarRegistro() {
       const funcionario = document.getElementById("funcionario").value.trim();
       const veiculo = document.getElementById("veiculo").value;
-      if (!funcionario) return alert("Digite o nome do funcionário!");
+
+      if (!funcionario) return;
 
       registros.push({ funcionario, veiculo });
-      salvarRegistros();
-      atualizarListas();
-      atualizarPainelDono();
       document.getElementById("funcionario").value = "";
+      atualizarTela();
     }
 
-    function atualizarListas() {
-      const lista = document.getElementById("listaRegistros");
-      lista.innerHTML = "";
-      let carros = 0, motos = 0, caminhoes = 0, total = 0;
-      const ganhos = {};
-
-      registros.forEach((r, i) => {
+    function atualizarTela() {
+      const listaRegistros = document.getElementById("listaRegistros");
+      listaRegistros.innerHTML = "";
+      registros.forEach(r => {
         const li = document.createElement("li");
-        li.textContent = `${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
-        lista.appendChild(li);
-
-        if (r.veiculo === "carro") carros++;
-        if (r.veiculo === "moto") motos++;
-        if (r.veiculo === "caminhao") caminhoes++;
-        total += valores[r.veiculo];
-        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
+        li.textContent = `${r.funcionario} lavou ${r.veiculo} ${icones[r.veiculo]} (+R$ ${valores[r.veiculo]})`;
+        listaRegistros.appendChild(li);
       });
 
-      document.getElementById("qtdCarros").textContent = carros;
-      document.getElementById("qtdMotos").textContent = motos;
-      document.getElementById("qtdCaminhoes").textContent = caminhoes;
-      document.getElementById("total").textContent = total;
+      const ganhos = registros.reduce((acc, r) => {
+        acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
+        return acc;
+      }, {});
 
-      const listaGanhos = document.getElementById("ganhosFuncionarios");
+      const listaGanhos = document.getElementById("listaGanhos");
       listaGanhos.innerHTML = "";
-      Object.entries(ganhos).forEach(([nome, valor]) => {
+      Object.entries(ganhos).forEach(([nome, total]) => {
         const li = document.createElement("li");
-        li.textContent = `${nome}: R$ ${valor}`;
+        li.textContent = `${nome}: R$ ${total}`;
         listaGanhos.appendChild(li);
       });
-    }
 
-    function resetDia() {
-      if (!confirm("Tem certeza que deseja encerrar o dia e salvar no histórico?")) return;
+      const totalCarros = registros.filter(r => r.veiculo === "carro").length;
+      const totalMotos = registros.filter(r => r.veiculo === "moto").length;
+      const totalCaminhoes = registros.filter(r => r.veiculo === "caminhao").length;
+      const totalGeral = registros.reduce((sum, r) => sum + valores[r.veiculo], 0);
 
-      let totalCarros = 0, totalMotos = 0, totalCaminhoes = 0, totalGeral = 0;
-      registros.forEach(r => {
-        if (r.veiculo === "carro") totalCarros++;
-        if (r.veiculo === "moto") totalMotos++;
-        if (r.veiculo === "caminhao") totalCaminhoes++;
-        totalGeral += valores[r.veiculo];
-      });
+      document.getElementById("resumo").textContent =
+        `Carros: ${totalCarros}, Motos: ${totalMotos}, Caminhões: ${totalCaminhoes}, Total do dia: R$ ${totalGeral}`;
 
-      if (registros.length > 0) {
-        const hoje = new Date();
-        const data = hoje.toLocaleDateString("pt-BR");
-        historico.push({ data, totalCarros, totalMotos, totalCaminhoes, totalGeral });
-        localStorage.setItem("historico", JSON.stringify(historico));
-      }
-
-      registros = [];
-      salvarRegistros();
-      atualizarListas();
       atualizarPainelDono();
     }
 
-    function mostrarLogin() {
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("loginBtn").style.display = "none";
+    function finalizarDia() {
+      if (registros.length === 0) return;
+      const totalCarros = registros.filter(r => r.veiculo === "carro").length;
+      const totalMotos = registros.filter(r => r.veiculo === "moto").length;
+      const totalCaminhoes = registros.filter(r => r.veiculo === "caminhao").length;
+      const totalGeral = registros.reduce((sum, r) => sum + valores[r.veiculo], 0);
+
+      historico.push({
+        data: new Date().toLocaleDateString("pt-BR"),
+        totalCarros,
+        totalMotos,
+        totalCaminhoes,
+        totalGeral
+      });
+
+      registros = [];
+      atualizarTela();
     }
 
-    function entrarAdmin() {
-      const senha = document.getElementById("senhaAdmin").value;
+    function entrarPainel() {
+      const senha = document.getElementById("senhaDono").value;
       if (senha === senhaCorreta) {
         document.getElementById("painelDono").style.display = "block";
-        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("loginDono").style.display = "none";
         atualizarPainelDono();
       } else {
         alert("Senha incorreta!");
       }
     }
 
-    function sairAdmin() {
+    function sairPainel() {
       document.getElementById("painelDono").style.display = "none";
-      document.getElementById("loginBtn").style.display = "block";
-      document.getElementById("senhaAdmin").value = "";
+      document.getElementById("loginDono").style.display = "block";
     }
 
-    function mostrarAba(nome) {
+    function abrirAba(aba) {
       document.querySelectorAll(".aba-conteudo").forEach(div => div.style.display = "none");
-      document.getElementById("aba-" + nome).style.display = "block";
-
-      if (nome === "graficos") gerarGraficos();
-      if (nome === "historico") atualizarHistorico();
+      document.getElementById("aba-" + aba).style.display = "block";
+      if (aba === "historico") atualizarHistorico();
     }
 
     function atualizarPainelDono() {
-      const painel = document.getElementById("registrosDono");
-      painel.innerHTML = "";
+      const lista = document.getElementById("registrosDono");
+      lista.innerHTML = "";
       registros.forEach(r => {
         const li = document.createElement("li");
-        li.classList.add(r.veiculo);
-
-        const img = document.createElement("img");
-        img.src = icones[r.veiculo];
-        img.alt = r.veiculo;
-
-        li.appendChild(img);
-        li.appendChild(document.createTextNode(`${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`));
-        painel.appendChild(li);
-      });
-    }
-
-    let chartVeiculos = null;
-    let chartFuncionarios = null;
-    let chartHistorico = null;
-
-    function gerarGraficos() {
-      const ctx1 = document.getElementById("graficoVeiculos").getContext("2d");
-      const ctx2 = document.getElementById("graficoFuncionarios").getContext("2d");
-
-      if (chartVeiculos) chartVeiculos.destroy();
-      if (chartFuncionarios) chartFuncionarios.destroy();
-
-      let contagem = { carro: 0, moto: 0, caminhao: 0 };
-      let ganhos = {};
-      registros.forEach(r => {
-        contagem[r.veiculo]++;
-        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
+        li.textContent = `${r.funcionario} lavou ${r.veiculo} ${icones[r.veiculo]} (+R$ ${valores[r.veiculo]})`;
+        lista.appendChild(li);
       });
 
-      chartVeiculos = new Chart(ctx1, {
-        type: "pie",
-        data: {
-          labels: ["Carros", "Motos", "Caminhões"],
-          datasets: [{
-            data: [contagem.carro, contagem.moto, contagem.caminhao],
-            backgroundColor: ["#007bff", "#ff9800", "#e91e63"]
-          }]
-        }
-      });
+      const ganhos = registros.reduce((acc, r) => {
+        acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
+        return acc;
+      }, {});
 
-      chartFuncionarios = new Chart(ctx2, {
-        type: "bar",
-        data: {
-          labels: Object.keys(ganhos),
-          datasets: [{
-            label: "Ganhos (R$)",
-            data: Object.values(ganhos),
-            backgroundColor: "#4caf50"
-          }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      const listaGanhos = document.getElementById("ganhosDono");
+      listaGanhos.innerHTML = "";
+      Object.entries(ganhos).forEach(([nome, total]) => {
+        const li = document.createElement("li");
+        li.textContent = `${nome}: R$ ${total}`;
+        listaGanhos.appendChild(li);
       });
     }
 
@@ -263,7 +206,8 @@
 
       historico.forEach(dia => {
         const li = document.createElement("li");
-        li.textContent = `${dia.data} → Carros: ${dia.totalCarros}, Motos: ${dia.totalMotos}, Caminhões: ${dia.totalCaminhoes}, Total: R$ ${dia.totalGeral}`;
+        li.textContent =
+          `${dia.data} → Carros: ${dia.totalCarros}, Motos: ${dia.totalMotos}, Caminhões: ${dia.totalCaminhoes}, Total: R$ ${dia.totalGeral}`;
         lista.appendChild(li);
       });
 
@@ -277,14 +221,21 @@
           datasets: [{
             label: "Arrecadação por dia (R$)",
             data: historico.map(d => d.totalGeral),
-            backgroundColor: "rgba(0, 123, 255, 0.7)"
+            backgroundColor: "rgba(0,123,255,0.7)",
+            borderColor: "rgba(0,123,255,1)",
+            borderWidth: 1
           }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Histórico de arrecadação" }
+          },
+          scales: { y: { beginAtZero: true } }
+        }
       });
     }
-
-    atualizarListas();
   </script>
 </body>
 </html>
