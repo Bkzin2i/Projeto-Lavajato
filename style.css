@@ -1,190 +1,230 @@
-/* Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
 
-/* ===== Temas ===== */
 body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  transition: background 0.3s, color 0.3s;
-}
-
-/* Dark mode */
-body.dark {
-  background: #121212;
+  background-color: #121217;
   color: #f0f0f0;
+  padding: 20px;
+  line-height: 1.6;
 }
 
-/* Light mode */
-body:not(.dark) {
-  background: #f4f4f9;
-  color: #222;
-}
-
-/* ===== Header ===== */
+/* Cabeçalho */
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1f1f1f;
-  color: #00bfff;
-  padding: 15px 20px;
-  border-bottom: 2px solid #00bfff;
-}
-body:not(.dark) header {
-  background: #e6e6e6;
-  color: #0077aa;
-  border-bottom-color: #0077aa;
+  padding: 10px 20px;
+  background-color: #1e1e2f;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
-header .logo { width: 50px; height: 50px; }
+header h1 {
+  color: #00bfff;
+  font-size: 1.8rem;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+}
+
 .tema-btn {
   background: none;
-  border: none;
-  font-size: 20px;
+  border: 2px solid #00bfff;
+  color: #00bfff;
+  border-radius: 8px;
+  padding: 5px 10px;
   cursor: pointer;
+  font-size: 1rem;
 }
 
-/* ===== Main layout ===== */
-main {
-  padding: 20px;
-  display: grid;
-  gap: 20px;
-  max-width: 800px;
-  margin: auto;
+.tema-btn:hover {
+  background-color: #00bfff;
+  color: #121217;
 }
 
 /* Formulário */
 .formulario {
   display: flex;
   gap: 10px;
-  padding: 15px;
-  border-radius: 8px;
-  background: #1f1f1f;
+  margin-bottom: 20px;
 }
-body:not(.dark) .formulario { background: #e6e6e6; }
 
-input, select, button {
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 14px;
-}
-input, select {
+.formulario input, 
+.formulario select {
   flex: 1;
-  background: #2a2a2a;
-  color: #f0f0f0;
-}
-body:not(.dark) input, body:not(.dark) select {
-  background: #fff;
-  color: #222;
-}
-
-button {
-  background: #00bfff;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover { background: #008fcc; }
-
-/* ===== Seções ===== */
-section {
-  padding: 15px;
-  border-radius: 8px;
-  background: #1f1f1f;
-}
-body:not(.dark) section { background: #fff; }
-
-h2 { margin-bottom: 10px; color: #00bfff; }
-body:not(.dark) h2 { color: #0077aa; }
-
-ul { list-style: none; }
-ul li {
   padding: 10px;
-  margin-bottom: 6px;
-  border-radius: 6px;
-  background: #2a2a2a;
+  border-radius: 8px;
+  border: none;
 }
-body:not(.dark) ul li { background: #f0f0f0; }
 
-/* ===== Painel do dono ===== */
-.painel {
-  display: none;
+.formulario button {
+  background-color: #00bfff;
+  color: #121217;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.formulario button:hover {
+  background-color: #0094c5;
+}
+
+/* Seções */
+section {
+  background-color: #1e1e2f;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+section h2 {
+  margin-bottom: 10px;
+  color: #00bfff;
+}
+
+ul {
+  list-style: none;
+}
+
+ul li {
+  padding: 5px 0;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ícones resumo */
+li .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Login do dono */
+.login-dono {
   position: fixed;
-  top: 15px;
-  right: 15px;
-  width: 340px;
+  top: 20px;
+  right: 20px;
+  background-color: #1e1e2f;
   padding: 15px;
   border-radius: 10px;
-  background: #1f1f1f;
-  border: 2px solid #00bfff;
+  box-shadow: 0 0 10px #000;
   z-index: 1000;
 }
-body:not(.dark) .painel {
-  background: #fff;
-  border: 2px solid #0077aa;
+
+.login-dono input {
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  border: none;
+  display: block;
+}
+
+.login-dono button {
+  background-color: #00bfff;
+  border: none;
+  color: #121217;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.login-dono button:hover {
+  background-color: #0094c5;
+}
+
+/* Painel do dono moderno (modal flutuante) */
+.painel {
+  position: fixed;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #1e1e2f;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 0 20px #000;
+  display: none;
+  z-index: 1001;
+  transition: all 0.3s ease;
 }
 
 .painel-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 10px;
   font-weight: bold;
+  font-size: 1.2rem;
   color: #00bfff;
 }
-body:not(.dark) .painel-header { color: #0077aa; }
 
-.abas { display: flex; gap: 5px; margin-bottom: 12px; }
+.painel-header button {
+  background-color: #ff4d4d;
+  border: none;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.painel-header button:hover {
+  background-color: #cc0000;
+}
+
+/* Abas */
+.abas {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
 .abas button {
   flex: 1;
-  border: 1px solid #00bfff;
-  background: #2a2a2a;
-  color: #00bfff;
-}
-.abas button:hover {
-  background: #00bfff;
-  color: #fff;
-}
-body:not(.dark) .abas button {
-  border: 1px solid #0077aa;
-  background: #e6e6e6;
-  color: #0077aa;
-}
-body:not(.dark) .abas button:hover {
-  background: #0077aa;
-  color: #fff;
-}
-
-#graficoHistorico {
-  margin-top: 15px;
-  max-height: 240px;
-  background: #fff;
+  padding: 5px 0;
+  border: none;
   border-radius: 6px;
-  padding: 5px;
+  background-color: #00bfff;
+  color: #121217;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-/* ===== Login do dono ===== */
-.login-dono {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #1f1f1f;
-  border: 2px solid #00bfff;
-}
-body:not(.dark) .login-dono {
-  background: #fff;
-  border: 2px solid #0077aa;
+.abas button:hover {
+  background-color: #0094c5;
 }
 
-.login-dono input {
-  width: 100%;
-  margin-bottom: 6px;
-  background: #2a2a2a;
+.aba-conteudo {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+/* Tema escuro */
+body.dark {
+  background-color: #121217;
   color: #f0f0f0;
 }
-body:not(.dark) .login-dono input {
-  background: #f0f0f0;
-  color: #222;
+
+body.dark header {
+  background-color: #1e1e2f;
+}
+
+body.dark section {
+  background-color: #1e1e2f;
+}
+
+body.dark .login-dono,
+body.dark .painel {
+  background-color: #1e1e2f;
 }
