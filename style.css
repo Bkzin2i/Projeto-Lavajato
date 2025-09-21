@@ -1,0 +1,86 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f4f8;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+
+.logo {
+  width: 120px;
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+h1 {
+  color: #007acc;
+  margin-bottom: 20px;
+}
+
+.resumo {
+  background: #e0f0ff;
+  border: 1px solid #007acc;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.resumo h2 {
+  color: #007acc;
+  margin-bottom: 10px;
+}
+
+#resetButton {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+#resetButton:hover {
+  background: #cc0000;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+input, select, button {
+  padding: 8px;
+  font-size: 16px;
+}
+
+button {
+  background: #007acc;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005f99;
+}
+
+ul {
+  text-align: left;
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.icone-veiculo {
+  width: 24px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
