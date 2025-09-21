@@ -84,3 +84,8 @@ ul {
   vertical-align: middle;
   margin-right: 6px;
 }
+
+.admin-login input {
+  padding: 6px;
+  font-size: 16px;
+  margin-right: 6px;
