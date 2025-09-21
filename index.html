@@ -24,7 +24,7 @@
         <option value="moto">Moto</option>
         <option value="caminhao">Caminhão</option>
       </select>
-      <button onclick="adicionarRegistro()">Adicionar</button>
+      <button id="btnAdicionar">Adicionar</button>
     </div>
 
     <!-- Registros -->
@@ -39,29 +39,33 @@
       <ul id="listaGanhos"></ul>
     </section>
 
-    <!-- Resumo -->
+    <!-- Resumo com ícones -->
     <section>
       <h2>Resumo do Dia</h2>
-      <ul id="resumoDia"></ul>
+      <ul id="resumoDia">
+        <li><span class="icon">🚗</span> Carros: <span id="totalCarros">0</span></li>
+        <li><span class="icon">🏍️</span> Motos: <span id="totalMotos">0</span></li>
+        <li><span class="icon">🚚</span> Caminhões: <span id="totalCaminhoes">0</span></li>
+      </ul>
     </section>
   </main>
 
   <!-- Login do dono -->
   <div class="login-dono" id="loginDono">
     <input type="password" id="senhaDono" placeholder="Senha do dono">
-    <button onclick="loginDono()">Entrar</button>
+    <button id="btnLoginDono">Entrar</button>
   </div>
 
-  <!-- Painel do dono -->
+  <!-- Painel do dono moderno -->
   <div class="painel" id="painelDono">
     <div class="painel-header">
       <span>Painel do Dono</span>
-      <button onclick="logoutDono()">❌</button>
+      <button id="btnLogoutDono">❌</button>
     </div>
 
     <div class="abas">
-      <button onclick="mostrarAba('historico')">Histórico</button>
-      <button onclick="mostrarAba('grafico')">Gráfico</button>
+      <button id="abaHistoricoBtn">Histórico</button>
+      <button id="abaGraficoBtn">Gráfico</button>
     </div>
 
     <div class="aba-conteudo" id="aba-historico">
@@ -76,133 +80,149 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const valores = { carro: 20, moto: 10, caminhao: 50 };
-    let registros = [];
-    let historico = [];
-    let donoLogado = false;
-    const senhaCorreta = "1234";
+    document.addEventListener("DOMContentLoaded", () => {
+      const valores = { carro: 20, moto: 10, caminhao: 50 };
+      let registros = [];
+      let historico = [];
+      const senhaCorreta = "1234";
 
-    // Chart.js
-    const ctx = document.getElementById("graficoHistorico").getContext("2d");
-    const grafico = new Chart(ctx, {
-      type: "bar",
-      data: { labels: [], datasets: [{ label: "Lavagens por dia", data: [], backgroundColor: "#00bfff" }] },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    function adicionarRegistro() {
-      const funcionario = document.getElementById("funcionario").value.trim();
-      const veiculo = document.getElementById("veiculo").value;
-      if (!funcionario) return;
-
-      registros.push({ funcionario, veiculo });
-      historico.push({ funcionario, veiculo, data: new Date().toLocaleString() });
-
-      document.getElementById("funcionario").value = "";
-      atualizarTela();
-    }
-
-    function atualizarTela() {
-      // Lista registros
-      const lista = document.getElementById("listaRegistros");
-      lista.innerHTML = "";
-      registros.forEach(r => {
-        const li = document.createElement("li");
-        li.textContent = `${r.funcionario} lavou um ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
-        lista.appendChild(li);
-      });
-
-      // Ganhos
-      const ganhos = registros.reduce((acc, r) => {
-        acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
-        return acc;
-      }, {});
+      // Elementos
+      const listaRegistros = document.getElementById("listaRegistros");
       const listaGanhos = document.getElementById("listaGanhos");
-      listaGanhos.innerHTML = "";
-      for (const [nome, total] of Object.entries(ganhos)) {
-        const li = document.createElement("li");
-        li.textContent = `${nome}: R$ ${total}`;
-        listaGanhos.appendChild(li);
+      const totalCarros = document.getElementById("totalCarros");
+      const totalMotos = document.getElementById("totalMotos");
+      const totalCaminhoes = document.getElementById("totalCaminhoes");
+      const historicoUl = document.getElementById("historicoRegistros");
+
+      const painelDono = document.getElementById("painelDono");
+      const loginDonoDiv = document.getElementById("loginDono");
+
+      const toggleBtn = document.getElementById("toggleTema");
+
+      // Tema salvo
+      const temaSalvo = localStorage.getItem("tema");
+      if (temaSalvo === "dark") {
+        document.body.classList.add("dark");
+        toggleBtn.textContent = "🌙";
+      } else {
+        document.body.classList.remove("dark");
+        toggleBtn.textContent = "☀️";
       }
 
-      // Resumo
-      const resumo = { carro: 0, moto: 0, caminhao: 0 };
-      registros.forEach(r => resumo[r.veiculo]++);
-      const resumoDia = document.getElementById("resumoDia");
-      resumoDia.innerHTML = `
-        <li>Carros: ${resumo.carro}</li>
-        <li>Motos: ${resumo.moto}</li>
-        <li>Caminhões: ${resumo.caminhao}</li>
-      `;
-
-      // Histórico (painel dono)
-      const historicoUl = document.getElementById("historicoRegistros");
-      historicoUl.innerHTML = "";
-      historico.forEach(h => {
-        const li = document.createElement("li");
-        li.textContent = `${h.data} - ${h.funcionario} lavou ${h.veiculo}`;
-        historicoUl.appendChild(li);
+      toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        if (document.body.classList.contains("dark")) {
+          toggleBtn.textContent = "🌙";
+          localStorage.setItem("tema", "dark");
+        } else {
+          toggleBtn.textContent = "☀️";
+          localStorage.setItem("tema", "light");
+        }
       });
 
-      // Gráfico
-      const dataHoje = new Date().toLocaleDateString();
-      const countHoje = registros.length;
-      const idx = grafico.data.labels.indexOf(dataHoje);
-      if (idx === -1) {
-        grafico.data.labels.push(dataHoje);
-        grafico.data.datasets[0].data.push(countHoje);
-      } else {
-        grafico.data.datasets[0].data[idx] = countHoje;
+      // Chart.js
+      const ctx = document.getElementById("graficoHistorico").getContext("2d");
+      const grafico = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: [],
+          datasets: [
+            { label: "Lavagens Carro", data: [], backgroundColor: "#00bfff" },
+            { label: "Lavagens Moto", data: [], backgroundColor: "#ffb400" },
+            { label: "Lavagens Caminhão", data: [], backgroundColor: "#ff4d4d" }
+          ]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+
+      function atualizarTela() {
+        // Registros
+        listaRegistros.innerHTML = "";
+        registros.forEach(r => {
+          const li = document.createElement("li");
+          li.textContent = `${r.funcionario} lavou um ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
+          listaRegistros.appendChild(li);
+        });
+
+        // Ganhos
+        const ganhos = registros.reduce((acc, r) => {
+          acc[r.funcionario] = (acc[r.funcionario] || 0) + valores[r.veiculo];
+          return acc;
+        }, {});
+        listaGanhos.innerHTML = "";
+        for (const [nome, total] of Object.entries(ganhos)) {
+          const li = document.createElement("li");
+          li.textContent = `${nome}: R$ ${total}`;
+          listaGanhos.appendChild(li);
+        }
+
+        // Resumo
+        const resumo = { carro: 0, moto: 0, caminhao: 0 };
+        registros.forEach(r => resumo[r.veiculo]++);
+        totalCarros.textContent = resumo.carro;
+        totalMotos.textContent = resumo.moto;
+        totalCaminhoes.textContent = resumo.caminhao;
+
+        // Histórico
+        historicoUl.innerHTML = "";
+        historico.forEach(h => {
+          const li = document.createElement("li");
+          li.textContent = `${h.data} - ${h.funcionario} lavou ${h.veiculo}`;
+          historicoUl.appendChild(li);
+        });
+
+        // Gráfico
+        const dataHoje = new Date().toLocaleDateString();
+        ["carro", "moto", "caminhao"].forEach((tipo, i) => {
+          const count = registros.filter(r => r.veiculo === tipo).length;
+          const dataset = grafico.data.datasets[i];
+          const idx = grafico.data.labels.indexOf(dataHoje);
+          if (idx === -1) {
+            grafico.data.labels.push(dataHoje);
+            dataset.data.push(count);
+          } else {
+            dataset.data[idx] = count;
+          }
+        });
+        grafico.update();
       }
-      grafico.update();
-    }
 
-    function loginDono() {
-      const senha = document.getElementById("senhaDono").value;
-      if (senha === senhaCorreta) {
-        donoLogado = true;
-        document.getElementById("painelDono").style.display = "block";
-        document.getElementById("loginDono").style.display = "none";
-      } else {
-        alert("Senha incorreta!");
+      function adicionarRegistro() {
+        const funcionario = document.getElementById("funcionario").value.trim();
+        const veiculo = document.getElementById("veiculo").value;
+        if (!funcionario) return;
+        registros.push({ funcionario, veiculo });
+        historico.push({ funcionario, veiculo, data: new Date().toLocaleString() });
+        document.getElementById("funcionario").value = "";
+        atualizarTela();
       }
-    }
 
-    function logoutDono() {
-      donoLogado = false;
-      document.getElementById("painelDono").style.display = "none";
-      document.getElementById("loginDono").style.display = "block";
-    }
-
-    function mostrarAba(aba) {
-      document.getElementById("aba-historico").style.display = aba === "historico" ? "block" : "none";
-      document.getElementById("aba-grafico").style.display = aba === "grafico" ? "block" : "none";
-    }
-
-    // === Alternância de tema com localStorage ===
-    const body = document.body;
-    const toggleBtn = document.getElementById("toggleTema");
-
-    // Verifica tema salvo
-    const temaSalvo = localStorage.getItem("tema");
-    if (temaSalvo === "dark") {
-      body.classList.add("dark");
-      toggleBtn.textContent = "🌙";
-    } else {
-      body.classList.remove("dark");
-      toggleBtn.textContent = "☀️";
-    }
-
-    // Alterna e salva
-    toggleBtn.addEventListener("click", () => {
-      body.classList.toggle("dark");
-      if (body.classList.contains("dark")) {
-        toggleBtn.textContent = "🌙";
-        localStorage.setItem("tema", "dark");
-      } else {
-        toggleBtn.textContent = "☀️";
-        localStorage.setItem("tema", "light");
+      function loginDono() {
+        const senha = document.getElementById("senhaDono").value;
+        if (senha === senhaCorreta) {
+          painelDono.style.display = "block";
+          loginDonoDiv.style.display = "none";
+        } else {
+          alert("Senha incorreta!");
+        }
       }
+
+      function logoutDono() {
+        painelDono.style.display = "none";
+        loginDonoDiv.style.display = "block";
+      }
+
+      function mostrarAba(aba) {
+        document.getElementById("aba-historico").style.display = aba === "historico" ? "block" : "none";
+        document.getElementById("aba-grafico").style.display = aba === "grafico" ? "block" : "none";
+      }
+
+      // Eventos
+      document.getElementById("btnAdicionar").addEventListener("click", adicionarRegistro);
+      document.getElementById("btnLoginDono").addEventListener("click", loginDono);
+      document.getElementById("btnLogoutDono").addEventListener("click", logoutDono);
+      document.getElementById("abaHistoricoBtn").addEventListener("click", () => mostrarAba("historico"));
+      document.getElementById("abaGraficoBtn").addEventListener("click", () => mostrarAba("grafico"));
     });
   </script>
 </body>
