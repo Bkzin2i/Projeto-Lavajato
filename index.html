@@ -5,148 +5,173 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lava Jato do Di</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
-    <!-- Logo -->
-    <img src="logo.png" alt="Lava Jato do Di" class="logo">
+    <h1>🚗 Lava Jato do Di 🧼</h1>
 
-    <h1>Lava Jato do Di 🚗🧼</h1>
-
-    <!-- Data do dia -->
-    <div class="resumo">
-      <h2>Resumo do dia</h2>
-      <p id="dataDia"></p>
-      <p>Carros lavados: <span id="totalCarros">0</span></p>
-      <p>Motos lavadas: <span id="totalMotos">0</span></p>
-      <p>Caminhões lavados: <span id="totalCaminhoes">0</span></p>
-      <p>Total arrecadado: R$ <span id="totalGeral">0</span></p>
-    </div>
-
-    <!-- Botão Reset do dia -->
-    <button id="resetButton" onclick="resetDia()">Reset do dia</button>
-
-    <!-- Formulário de registro -->
-    <div class="form">
+    <!-- Formulário de registros -->
+    <div class="formulario">
       <input type="text" id="funcionario" placeholder="Nome do funcionário">
       <select id="veiculo">
-        <option value="carro">Carro</option>
-        <option value="moto">Moto</option>
-        <option value="caminhao">Caminhão</option>
+        <option value="carro">Carro (R$20)</option>
+        <option value="moto">Moto (R$10)</option>
+        <option value="caminhao">Caminhão (R$50)</option>
       </select>
       <button onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
-    <!-- Lista de registros -->
-    <h2>Registros</h2>
-    <ul id="registrosList"></ul>
+    <!-- Lista -->
+    <h2>📋 Registros de hoje</h2>
+    <ul id="listaRegistros"></ul>
 
-    <!-- Lista de ganhos -->
-    <h2>Ganhos por funcionário</h2>
-    <ul id="ganhosList"></ul>
+    <!-- Resumo -->
+    <h2>💰 Resumo</h2>
+    <p>Carros: <span id="qtdCarros">0</span></p>
+    <p>Motos: <span id="qtdMotos">0</span></p>
+    <p>Caminhões: <span id="qtdCaminhoes">0</span></p>
+    <p><strong>Total arrecadado: R$ <span id="total">0</span></strong></p>
 
-    <!-- Login do dono -->
-    <div class="admin-login">
+    <!-- Ganhos por funcionário -->
+    <h2>👨‍🔧 Ganhos por funcionário</h2>
+    <ul id="ganhosFuncionarios"></ul>
+
+    <button onclick="resetDia()">Encerrar o dia</button>
+  </div>
+
+  <!-- Painel do dono -->
+  <div id="adminBox" class="admin-box">
+    <button id="loginBtn" onclick="mostrarLogin()">Entrar 🔑</button>
+
+    <div id="loginForm" class="login-form" style="display:none;">
       <input type="password" id="senhaAdmin" placeholder="Senha do dono">
-      <button onclick="entrarAdmin()">Entrar como dono</button>
+      <button onclick="entrarAdmin()">Acessar</button>
     </div>
 
-    <!-- Painel do dono -->
     <div id="painelDono" style="display:none;">
-      <h2>Painel do dono</h2>
-      <ul id="registrosDono"></ul>
-      <button onclick="sairAdmin()">Sair do painel</button>
+      <h3>👑 Painel do dono</h3>
+
+      <!-- Abas -->
+      <div class="abas">
+        <button onclick="mostrarAba('registros')">📋 Registros</button>
+        <button onclick="mostrarAba('graficos')">📊 Gráficos</button>
+        <button onclick="mostrarAba('historico')">📅 Histórico</button>
+      </div>
+
+      <!-- Conteúdo das abas -->
+      <div id="aba-registros" class="aba-conteudo">
+        <ul id="registrosDono"></ul>
+      </div>
+
+      <div id="aba-graficos" class="aba-conteudo" style="display:none;">
+        <canvas id="graficoVeiculos"></canvas>
+        <canvas id="graficoFuncionarios"></canvas>
+      </div>
+
+      <div id="aba-historico" class="aba-conteudo" style="display:none;">
+        <ul id="listaHistorico"></ul>
+        <canvas id="graficoHistorico"></canvas>
+      </div>
+
+      <button onclick="sairAdmin()">Sair</button>
     </div>
   </div>
 
   <script>
-    const registros = JSON.parse(localStorage.getItem("registros")) || [];
+    const senhaCorreta = "1234"; // senha do dono
     const valores = { carro: 20, moto: 10, caminhao: 50 };
-    const icones = { carro: "carro.png", moto: "moto.png", caminhao: "caminhao.png" };
-    const senhaCorreta = "1234"; // Substitua pela sua senha
+    const icones = {
+      carro: "https://cdn-icons-png.flaticon.com/512/743/743922.png",
+      moto: "https://cdn-icons-png.flaticon.com/512/743/743928.png",
+      caminhao: "https://cdn-icons-png.flaticon.com/512/743/743914.png"
+    };
 
-    function atualizarData() {
-      const hoje = new Date();
-      const dia = String(hoje.getDate()).padStart(2, '0');
-      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-      const ano = hoje.getFullYear();
-      document.getElementById("dataDia").textContent = `Dia: ${dia}/${mes}/${ano}`;
+    let registros = JSON.parse(localStorage.getItem("registros")) || [];
+    let historico = JSON.parse(localStorage.getItem("historico")) || [];
+
+    function salvarRegistros() {
+      localStorage.setItem("registros", JSON.stringify(registros));
     }
 
     function adicionarRegistro() {
       const funcionario = document.getElementById("funcionario").value.trim();
       const veiculo = document.getElementById("veiculo").value;
       if (!funcionario) return alert("Digite o nome do funcionário!");
-      
-      registros.push({ funcionario, veiculo });
-      document.getElementById("funcionario").value = "";
 
+      registros.push({ funcionario, veiculo });
       salvarRegistros();
       atualizarListas();
       atualizarPainelDono();
+      document.getElementById("funcionario").value = "";
     }
 
     function atualizarListas() {
-      const registrosList = document.getElementById("registrosList");
-      const ganhosList = document.getElementById("ganhosList");
-      
-      registrosList.innerHTML = "";
+      const lista = document.getElementById("listaRegistros");
+      lista.innerHTML = "";
+      let carros = 0, motos = 0, caminhoes = 0, total = 0;
       const ganhos = {};
-      let totalCarros = 0;
-      let totalMotos = 0;
-      let totalCaminhoes = 0;
-      let totalGeral = 0;
 
+      registros.forEach((r, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
+        lista.appendChild(li);
+
+        if (r.veiculo === "carro") carros++;
+        if (r.veiculo === "moto") motos++;
+        if (r.veiculo === "caminhao") caminhoes++;
+        total += valores[r.veiculo];
+        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
+      });
+
+      document.getElementById("qtdCarros").textContent = carros;
+      document.getElementById("qtdMotos").textContent = motos;
+      document.getElementById("qtdCaminhoes").textContent = caminhoes;
+      document.getElementById("total").textContent = total;
+
+      const listaGanhos = document.getElementById("ganhosFuncionarios");
+      listaGanhos.innerHTML = "";
+      Object.entries(ganhos).forEach(([nome, valor]) => {
+        const li = document.createElement("li");
+        li.textContent = `${nome}: R$ ${valor}`;
+        listaGanhos.appendChild(li);
+      });
+    }
+
+    function resetDia() {
+      if (!confirm("Tem certeza que deseja encerrar o dia e salvar no histórico?")) return;
+
+      let totalCarros = 0, totalMotos = 0, totalCaminhoes = 0, totalGeral = 0;
       registros.forEach(r => {
         if (r.veiculo === "carro") totalCarros++;
         if (r.veiculo === "moto") totalMotos++;
         if (r.veiculo === "caminhao") totalCaminhoes++;
         totalGeral += valores[r.veiculo];
-
-        const li = document.createElement("li");
-        const img = document.createElement("img");
-        img.src = icones[r.veiculo];
-        img.alt = r.veiculo;
-        img.className = "icone-veiculo";
-
-        li.appendChild(img);
-        li.appendChild(document.createTextNode(` ${r.funcionario} lavou um ${r.veiculo} (+R$ ${valores[r.veiculo]})`));
-        registrosList.appendChild(li);
-
-        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
       });
 
-      document.getElementById("totalCarros").textContent = totalCarros;
-      document.getElementById("totalMotos").textContent = totalMotos;
-      document.getElementById("totalCaminhoes").textContent = totalCaminhoes;
-      document.getElementById("totalGeral").textContent = totalGeral;
-
-      ganhosList.innerHTML = "";
-      for (const [nome, total] of Object.entries(ganhos)) {
-        const li = document.createElement("li");
-        li.textContent = `${nome}: R$ ${total}`;
-        ganhosList.appendChild(li);
+      if (registros.length > 0) {
+        const hoje = new Date();
+        const data = hoje.toLocaleDateString("pt-BR");
+        historico.push({ data, totalCarros, totalMotos, totalCaminhoes, totalGeral });
+        localStorage.setItem("historico", JSON.stringify(historico));
       }
-    }
 
-    function resetDia() {
-      if (!confirm("Tem certeza que deseja limpar todos os registros do dia?")) return;
-      registros.length = 0;
+      registros = [];
       salvarRegistros();
       atualizarListas();
       atualizarPainelDono();
     }
 
-    function salvarRegistros() {
-      localStorage.setItem("registros", JSON.stringify(registros));
+    function mostrarLogin() {
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("loginBtn").style.display = "none";
     }
 
-    // Painel do dono
     function entrarAdmin() {
       const senha = document.getElementById("senhaAdmin").value;
       if (senha === senhaCorreta) {
         document.getElementById("painelDono").style.display = "block";
-        document.querySelector(".admin-login").style.display = "none";
+        document.getElementById("loginForm").style.display = "none";
         atualizarPainelDono();
       } else {
         alert("Senha incorreta!");
@@ -155,29 +180,111 @@
 
     function sairAdmin() {
       document.getElementById("painelDono").style.display = "none";
-      document.querySelector(".admin-login").style.display = "block";
+      document.getElementById("loginBtn").style.display = "block";
+      document.getElementById("senhaAdmin").value = "";
+    }
+
+    function mostrarAba(nome) {
+      document.querySelectorAll(".aba-conteudo").forEach(div => div.style.display = "none");
+      document.getElementById("aba-" + nome).style.display = "block";
+
+      if (nome === "graficos") gerarGraficos();
+      if (nome === "historico") atualizarHistorico();
     }
 
     function atualizarPainelDono() {
       const painel = document.getElementById("registrosDono");
       painel.innerHTML = "";
-      registros.forEach((r, i) => {
+      registros.forEach(r => {
         const li = document.createElement("li");
+        li.classList.add(r.veiculo);
 
         const img = document.createElement("img");
         img.src = icones[r.veiculo];
         img.alt = r.veiculo;
-        li.appendChild(img);
 
+        li.appendChild(img);
         li.appendChild(document.createTextNode(`${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`));
         painel.appendChild(li);
       });
     }
 
-    window.onload = function() {
-      atualizarData();
-      atualizarListas();
-    };
+    let chartVeiculos = null;
+    let chartFuncionarios = null;
+    let chartHistorico = null;
+
+    function gerarGraficos() {
+      const ctx1 = document.getElementById("graficoVeiculos").getContext("2d");
+      const ctx2 = document.getElementById("graficoFuncionarios").getContext("2d");
+
+      if (chartVeiculos) chartVeiculos.destroy();
+      if (chartFuncionarios) chartFuncionarios.destroy();
+
+      let contagem = { carro: 0, moto: 0, caminhao: 0 };
+      let ganhos = {};
+      registros.forEach(r => {
+        contagem[r.veiculo]++;
+        ganhos[r.funcionario] = (ganhos[r.funcionario] || 0) + valores[r.veiculo];
+      });
+
+      chartVeiculos = new Chart(ctx1, {
+        type: "pie",
+        data: {
+          labels: ["Carros", "Motos", "Caminhões"],
+          datasets: [{
+            data: [contagem.carro, contagem.moto, contagem.caminhao],
+            backgroundColor: ["#007bff", "#ff9800", "#e91e63"]
+          }]
+        }
+      });
+
+      chartFuncionarios = new Chart(ctx2, {
+        type: "bar",
+        data: {
+          labels: Object.keys(ganhos),
+          datasets: [{
+            label: "Ganhos (R$)",
+            data: Object.values(ganhos),
+            backgroundColor: "#4caf50"
+          }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function atualizarHistorico() {
+      const lista = document.getElementById("listaHistorico");
+      lista.innerHTML = "";
+
+      if (historico.length === 0) {
+        lista.innerHTML = "<li>Nenhum dia registrado ainda.</li>";
+        return;
+      }
+
+      historico.forEach(dia => {
+        const li = document.createElement("li");
+        li.textContent = `${dia.data} → Carros: ${dia.totalCarros}, Motos: ${dia.totalMotos}, Caminhões: ${dia.totalCaminhoes}, Total: R$ ${dia.totalGeral}`;
+        lista.appendChild(li);
+      });
+
+      const ctx = document.getElementById("graficoHistorico").getContext("2d");
+      if (chartHistorico) chartHistorico.destroy();
+
+      chartHistorico = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: historico.map(d => d.data),
+          datasets: [{
+            label: "Arrecadação por dia (R$)",
+            data: historico.map(d => d.totalGeral),
+            backgroundColor: "rgba(0, 123, 255, 0.7)"
+          }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    atualizarListas();
   </script>
 </body>
 </html>
