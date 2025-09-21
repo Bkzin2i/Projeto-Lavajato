@@ -163,7 +163,13 @@
       painel.innerHTML = "";
       registros.forEach((r, i) => {
         const li = document.createElement("li");
-        li.textContent = `${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`;
+
+        const img = document.createElement("img");
+        img.src = icones[r.veiculo];
+        img.alt = r.veiculo;
+        li.appendChild(img);
+
+        li.appendChild(document.createTextNode(`${r.funcionario} lavou ${r.veiculo} (+R$ ${valores[r.veiculo]})`));
         painel.appendChild(li);
       });
     }
