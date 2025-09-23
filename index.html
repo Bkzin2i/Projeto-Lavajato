@@ -9,13 +9,17 @@
 <body>
   <!-- Cabeçalho -->
   <header>
-    <img src="logo.png" alt="Logo Lava Jato" class="logo">
+    <img src="logo.jpg" alt="Logo Lava Jato" class="logo">
     <h1>Lava Jato do Di 🚗🧼</h1>
     <button id="toggleTema" class="tema-btn">🌙</button>
+    <div class="perfil-bolinha" onclick="abrirLogin()">
+      👤
+    </div>
   </header>
 
   <!-- Conteúdo principal -->
   <main>
+    <!-- Formulário -->
     <div class="formulario">
       <input id="funcionario" placeholder="Nome do funcionário">
       <select id="veiculo">
@@ -26,38 +30,42 @@
       <button onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
+    <!-- Registros -->
     <section>
       <h2>Registros</h2>
       <ul id="listaRegistros"></ul>
     </section>
 
+    <!-- Ganhos -->
     <section>
       <h2>Ganhos por Funcionário</h2>
       <ul id="listaGanhos"></ul>
     </section>
 
+    <!-- Resumo -->
     <section>
       <h2>Resumo do Dia</h2>
       <ul id="resumoDia"></ul>
-      <button id="finalizarDia" class="finalizar-btn">Finalizar Dia</button>
     </section>
   </main>
 
-  <!-- Botão perfil dono -->
-  <div id="perfilDono" class="perfil-dono">
-    <img src="logo.png" alt="Perfil Dono">
+  <!-- Login do dono -->
+  <div class="login-dono" id="loginDono">
+    <input type="password" id="senhaDono" placeholder="Senha do dono">
+    <button onclick="loginDono()">Entrar</button>
   </div>
 
   <!-- Painel do dono -->
   <div class="painel" id="painelDono">
     <div class="painel-header">
       <span>Painel do Dono</span>
-      <button onclick="fecharPainel()">❌</button>
+      <button onclick="logoutDono()">❌</button>
     </div>
 
     <div class="abas">
       <button onclick="mostrarAba('historico')">Histórico</button>
       <button onclick="mostrarAba('grafico')">Gráfico</button>
+      <button onclick="finalizarDia()">Finalizar Dia</button>
     </div>
 
     <div class="aba-conteudo" id="aba-historico">
@@ -72,10 +80,11 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const senhaDono = "1234"; // 🔑 senha do painel
     const valores = { carro: 20, moto: 10, caminhao: 50 };
-    let registros = JSON.parse(localStorage.getItem("registrosDia")) || [];
-    let historico = JSON.parse(localStorage.getItem("historicoGeral")) || [];
+    let registros = JSON.parse(localStorage.getItem("registros")) || [];
+    let historico = JSON.parse(localStorage.getItem("historico")) || [];
+    let donoLogado = false;
+    const senhaCorreta = "1234";
 
     // Chart.js
     const ctx = document.getElementById("graficoHistorico").getContext("2d");
@@ -85,9 +94,9 @@
       options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
 
-    function salvarDados() {
-      localStorage.setItem("registrosDia", JSON.stringify(registros));
-      localStorage.setItem("historicoGeral", JSON.stringify(historico));
+    function salvarLocal() {
+      localStorage.setItem("registros", JSON.stringify(registros));
+      localStorage.setItem("historico", JSON.stringify(historico));
     }
 
     function adicionarRegistro() {
@@ -95,23 +104,16 @@
       const veiculo = document.getElementById("veiculo").value;
       if (!funcionario) return;
 
-      const dataAgora = new Date().toLocaleString();
       registros.push({ funcionario, veiculo });
-      historico.push({ funcionario, veiculo, data: dataAgora });
+      historico.push({ funcionario, veiculo, data: new Date().toLocaleString() });
 
       document.getElementById("funcionario").value = "";
-      salvarDados();
-      atualizarTela();
-    }
-
-    function finalizarDia() {
-      registros = [];
-      localStorage.setItem("registrosDia", JSON.stringify([]));
+      salvarLocal();
       atualizarTela();
     }
 
     function atualizarTela() {
-      // Registros
+      // Lista registros
       const lista = document.getElementById("listaRegistros");
       lista.innerHTML = "";
       registros.forEach(r => {
@@ -165,21 +167,25 @@
       grafico.update();
     }
 
-    // === Painel com senha ===
-    const perfilBtn = document.getElementById("perfilDono");
-    const painel = document.getElementById("painelDono");
+    function abrirLogin() {
+      document.getElementById("loginDono").style.display = "block";
+    }
 
-    perfilBtn.addEventListener("click", () => {
-      const senha = prompt("Digite a senha do dono:");
-      if (senha === senhaDono) {
-        painel.style.display = "block";
+    function loginDono() {
+      const senha = document.getElementById("senhaDono").value;
+      if (senha === senhaCorreta) {
+        donoLogado = true;
+        document.getElementById("painelDono").style.display = "block";
+        document.getElementById("loginDono").style.display = "none";
       } else {
         alert("Senha incorreta!");
       }
-    });
+    }
 
-    function fecharPainel() {
-      painel.style.display = "none";
+    function logoutDono() {
+      donoLogado = false;
+      document.getElementById("painelDono").style.display = "none";
+      document.getElementById("loginDono").style.display = "none";
     }
 
     function mostrarAba(aba) {
@@ -187,18 +193,37 @@
       document.getElementById("aba-grafico").style.display = aba === "grafico" ? "block" : "none";
     }
 
-    // Tema
+    function finalizarDia() {
+      registros = [];
+      salvarLocal();
+      atualizarTela();
+      alert("Dia finalizado com sucesso! ✅");
+    }
+
+    // === Alternância de tema com localStorage ===
     const body = document.body;
     const toggleBtn = document.getElementById("toggleTema");
+
     const temaSalvo = localStorage.getItem("tema");
-    if (temaSalvo === "dark") body.classList.add("dark");
+    if (temaSalvo === "dark") {
+      body.classList.add("dark");
+      toggleBtn.textContent = "🌙";
+    } else {
+      body.classList.remove("dark");
+      toggleBtn.textContent = "☀️";
+    }
 
     toggleBtn.addEventListener("click", () => {
       body.classList.toggle("dark");
-      localStorage.setItem("tema", body.classList.contains("dark") ? "dark" : "light");
+      if (body.classList.contains("dark")) {
+        toggleBtn.textContent = "🌙";
+        localStorage.setItem("tema", "dark");
+      } else {
+        toggleBtn.textContent = "☀️";
+        localStorage.setItem("tema", "light");
+      }
     });
 
-    document.getElementById("finalizarDia").addEventListener("click", finalizarDia);
     atualizarTela();
   </script>
 </body>
