@@ -1,155 +1,232 @@
-/* ===== Reset ===== */
-body {
+/* Reset básico */
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   font-family: Arial, sans-serif;
-  background: #f4f4f9;
-  color: #333;
+  background: #f5f5f5;
+  color: #222;
   transition: background 0.3s, color 0.3s;
 }
 
-.dark {
-  background: #1e1e2f;
-  color: #f0f0f0;
+body.dark {
+  background: #121212;
+  color: #e4e4e4;
 }
 
-/* ===== Header ===== */
+/* Cabeçalho */
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 15px 20px;
   background: #2563eb;
   color: white;
-  padding: 10px 20px;
+  position: relative;
 }
 
-.logo {
-  height: 40px;
+header h1 {
+  font-size: 1.5rem;
+}
+
+header .logo {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
   margin-right: 10px;
 }
 
 .tema-btn {
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 1.2rem;
   cursor: pointer;
   color: white;
 }
 
-/* ===== Main ===== */
+/* Bolinha de perfil */
+.perfil-bolinha {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  color: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.perfil-bolinha:hover {
+  background: #ddd;
+}
+
+/* Conteúdo principal */
 main {
   padding: 20px;
   max-width: 800px;
   margin: auto;
 }
 
+h2 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 5px;
+}
+
+ul {
+  list-style: none;
+  margin-top: 5px;
+}
+
+ul li {
+  padding: 6px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Formulário */
 .formulario {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
 }
 
-.formulario input, .formulario select, .formulario button {
-  padding: 10px;
-  font-size: 14px;
+.formulario input,
+.formulario select {
+  padding: 8px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  flex: 1;
 }
 
 .formulario button {
+  padding: 8px 12px;
   background: #2563eb;
   color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.finalizar-btn {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background: #e11d48;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
+.formulario button:hover {
+  background: #1e4ec9;
 }
 
-/* ===== Perfil Dono ===== */
-.perfil-dono {
+/* Login do dono */
+.login-dono {
+  display: none;
   position: fixed;
-  top: 15px;
-  right: 15px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  cursor: pointer;
-  overflow: hidden;
-  border: 2px solid #2563eb;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   z-index: 1000;
 }
 
-.perfil-dono img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.login-dono input {
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
 }
 
-/* ===== Painel Dono ===== */
+.login-dono button {
+  padding: 8px 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Painel do dono */
 .painel {
   display: none;
   position: fixed;
-  top: 70px;
-  right: 15px;
-  width: 320px;
+  top: 15%;
+  right: 20px;
+  width: 350px;
+  max-height: 75%;
   background: #fff;
-  color: #333;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  padding: 15px;
-  z-index: 999;
-  max-height: 80vh;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
   overflow-y: auto;
+  z-index: 1000;
 }
 
-.dark .painel {
-  background: #2c2c3e;
-  color: #f0f0f0;
+body.dark .painel {
+  background: #1e1e1e;
+  color: #e4e4e4;
 }
 
 .painel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: bold;
-  margin-bottom: 10px;
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border-radius: 10px 10px 0 0;
 }
 
 .abas {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  justify-content: space-around;
+  padding: 10px;
 }
 
 .abas button {
-  flex: 1;
-  padding: 8px;
-  cursor: pointer;
+  padding: 8px 12px;
   border: none;
   background: #2563eb;
   color: white;
   border-radius: 5px;
+  cursor: pointer;
+}
+
+.abas button:hover {
+  background: #1e4ec9;
 }
 
 .aba-conteudo {
-  font-size: 14px;
+  padding: 10px 15px;
 }
 
-.aba-conteudo ul {
-  list-style: none;
-  padding: 0;
+.aba-conteudo ul li {
+  font-size: 0.9rem;
 }
 
-.aba-conteudo li {
-  margin-bottom: 5px;
+/* Tema escuro extra */
+body.dark header {
+  background: #0f172a;
+}
+
+body.dark .perfil-bolinha {
+  background: #2563eb;
+  color: #fff;
+}
+
+body.dark .formulario input,
+body.dark .formulario select {
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+body.dark .login-dono {
+  background: #1e1e1e;
+  color: #fff;
 }
