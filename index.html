@@ -16,7 +16,6 @@
 
   <!-- Conteúdo principal -->
   <main>
-    <!-- Formulário -->
     <div class="formulario">
       <input id="funcionario" placeholder="Nome do funcionário">
       <select id="veiculo">
@@ -27,19 +26,16 @@
       <button onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
-    <!-- Registros -->
     <section>
       <h2>Registros</h2>
       <ul id="listaRegistros"></ul>
     </section>
 
-    <!-- Ganhos -->
     <section>
       <h2>Ganhos por Funcionário</h2>
       <ul id="listaGanhos"></ul>
     </section>
 
-    <!-- Resumo -->
     <section>
       <h2>Resumo do Dia</h2>
       <ul id="resumoDia"></ul>
@@ -47,7 +43,7 @@
     </section>
   </main>
 
-  <!-- Botão perfil dono (com logo) -->
+  <!-- Botão perfil dono -->
   <div id="perfilDono" class="perfil-dono">
     <img src="logo.png" alt="Perfil Dono">
   </div>
@@ -76,6 +72,7 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    const senhaDono = "1234"; // 🔑 senha do painel
     const valores = { carro: 20, moto: 10, caminhao: 50 };
     let registros = JSON.parse(localStorage.getItem("registrosDia")) || [];
     let historico = JSON.parse(localStorage.getItem("historicoGeral")) || [];
@@ -114,7 +111,7 @@
     }
 
     function atualizarTela() {
-      // Lista registros
+      // Registros
       const lista = document.getElementById("listaRegistros");
       lista.innerHTML = "";
       registros.forEach(r => {
@@ -168,12 +165,17 @@
       grafico.update();
     }
 
-    // === Painel do dono ===
+    // === Painel com senha ===
     const perfilBtn = document.getElementById("perfilDono");
     const painel = document.getElementById("painelDono");
 
     perfilBtn.addEventListener("click", () => {
-      painel.style.display = painel.style.display === "block" ? "none" : "block";
+      const senha = prompt("Digite a senha do dono:");
+      if (senha === senhaDono) {
+        painel.style.display = "block";
+      } else {
+        alert("Senha incorreta!");
+      }
     });
 
     function fecharPainel() {
@@ -185,7 +187,7 @@
       document.getElementById("aba-grafico").style.display = aba === "grafico" ? "block" : "none";
     }
 
-    // === Tema com localStorage ===
+    // Tema
     const body = document.body;
     const toggleBtn = document.getElementById("toggleTema");
     const temaSalvo = localStorage.getItem("tema");
@@ -196,10 +198,7 @@
       localStorage.setItem("tema", body.classList.contains("dark") ? "dark" : "light");
     });
 
-    // Finalizar dia
     document.getElementById("finalizarDia").addEventListener("click", finalizarDia);
-
-    // Inicializa
     atualizarTela();
   </script>
 </body>
